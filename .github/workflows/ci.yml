@@ -48,7 +48,7 @@ jobs:
           name: app-dir
           path: app/
       - name: Cópia do arquivo static.json
-        run: cp static.json app/sgcmapi-meu/
+        run: cp static.json app/sgcmapp/
       - name: Deploy
         uses: akhileshns/heroku-deploy@v3.12.12
         with:
