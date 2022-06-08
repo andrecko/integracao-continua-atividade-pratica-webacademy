@@ -1,0 +1,59 @@
+name: Build, Test and Deploy
+
+on:
+  workflow_dispatch:
+  
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+    name: Testes
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 14
+      - name: Instalação das dependências
+        run: npm ci
+      - name: Teste
+        run: npm test -- --no-watch --no-progress --browsers=ChromeHeadlessCI
+         
+  build:
+    runs-on: ubuntu-latest
+    name: Build
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 14
+      - name: Instalação das dependências
+        run: npm ci
+      - name: Build
+        run: npm run build --prod
+      - name: Upload do app
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-dir
+          path: dist/
+           
+  deploy:
+    needs: [test, build]
+    runs-on: ubuntu-latest
+    name: Deploy Heroku
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download do app
+        uses: actions/download-artifact@v3
+        with:
+          name: app-dir
+          path: app/
+      - name: Cópia do arquivo static.json
+        run: cp static.json app/sgcmapp/
+      - name: Deploy
+        uses: akhileshns/heroku-deploy@v3.12.12
+        with:
+          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          heroku_app_name: 'sgcmapp'
+          heroku_email: 'danielnsilva@gmail.com'
+          appdir: 'app/'
+    
